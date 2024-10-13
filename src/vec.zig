@@ -1,33 +1,31 @@
-const fmax = @import("./math.zig").fmax;
 const math = @import("std").math;
-
 const expect = @import("std").testing.expect;
 
-pub const Vec4 = struct {
-    x: f64, y: f64, z: f64, w: f64,
+pub const Vec4 = packed struct {
+    x: f64,
+    y: f64,
+    z: f64,
+    w: f64,
 
-    pub fn Add(_other: Vec4) Vec4 {
-        const self = @This();
+    pub fn Add(self: Vec4, other: Vec4) Vec4 {
         return Vec4{
-            .x = self.x + _other.x,
-            .y = self.y + _other.y,
-            .z = self.z + _other.z,
-            .w = self.w + _other.w,
+            .x = self.x + other.x,
+            .y = self.y + other.y,
+            .z = self.z + other.z,
+            .w = self.w + other.w,
         };
     }
 
-    pub fn Sub(_other: Vec4) Vec4 {
-        const self = @This();
+    pub fn Sub(self: Vec4, other: Vec4) Vec4 {
         return Vec4{
-            .x = self.x - _other.x,
-            .y = self.y - _other.y,
-            .z = self.z - _other.z,
-            .w = self.w - _other.w,
+            .x = self.x - other.x,
+            .y = self.y - other.y,
+            .z = self.z - other.z,
+            .w = self.w - other.w,
         };
     }
 
-    pub fn Neg() Vec4 {
-        const self = @This();
+    pub fn Neg(self: Vec4) Vec4 {
         return Vec4{
             .x = -self.x,
             .y = -self.y,
@@ -36,27 +34,24 @@ pub const Vec4 = struct {
         };
     }
 
-    pub fn Scale(_scalar: f64) Vec4 {
-        const self = @This();
-        return Vec4 {
-            .x = self.x * _scalar,
-            .y = self.y * _scalar,
-            .z = self.z * _scalar,
-            .w = self.w * _scalar,
+    pub fn Scale(self: Vec4, scalar: f64) Vec4 {
+        return Vec4{
+            .x = self.x * scalar,
+            .y = self.y * scalar,
+            .z = self.z * scalar,
+            .w = self.w * scalar,
         };
     }
 
-    pub fn Mag() f64 {
-        const self = @This();
+    pub fn Mag(self: Vec4) f64 {
         const sqrs = (self.x * self.x) + (self.y * self.y) + (self.z * self.z) + (self.w + self.w);
         return math.sqrt(sqrs);
     }
 
-    pub fn Normal() Vec4 {
-        const self = @This();
+    pub fn Normal(self: Vec4) Vec4 {
         const mag = self.Mag();
 
-        return Vec4 {
+        return Vec4{
             .x = self.x / mag,
             .y = self.y / mag,
             .z = self.z / mag,
@@ -64,7 +59,12 @@ pub const Vec4 = struct {
         };
     }
 
-
+    pub fn Dot(self: Vec4, other: Vec4) f64 {
+        return (self.x * other.x) +
+            (self.y * other.y) +
+            (self.z * other.z) +
+            (self.w * other.w);
+    }
 };
 
 pub fn Point(x: f64, y: f64, z: f64) Vec4 {
@@ -85,6 +85,9 @@ pub fn Vector(x: f64, y: f64, z: f64) Vec4 {
     };
 }
 
+pub fn VectorEquals(a: Vec4, b: Vec4) bool {
+    return (a.x == b.x) and (a.y == b.y) and (a.z == b.z) and (a.w == b.w);
+}
 
 test "Point Creation" {
     const x = 1;
@@ -106,33 +109,56 @@ test "Vector Creation" {
     try expect(value.w == 0);
 }
 
-
 test "Vec4 Addition" {
-    const vec1 = Vec4{
-        .x = 1,
-        .y = 2,
-        .z = 3,
-        .w = 1,
-    };
+    const vec1 = Vector(1, 2, 3);
+    const vec2 = Vector(1, 2, 3);
 
-    const vec2 = Vec4{
-        .x = 1,
-        .y = 2,
-        .z = 3,
-        .w = 1,
-    };
-
-    const expected = Vec4{
-        .x = 2,
-        .y = 4,
-        .z = 6,
-        .w = 1,
-    };
-
+    const expected = Vector(2, 4, 6);
     const actual = vec1.Add(vec2);
 
-    try expect(expected.x == actual.x);
-    try expect(expected.y == actual.y);
-    try expect(expected.z == actual.z);
-    try expect(expected.w == actual.w);
+    try expect(VectorEquals(expected, actual));
+}
+
+test "Vec4 Subtraction" {
+    const vec1 = Vector(2, 4, 6);
+    const vec2 = Vector(1, 2, 3);
+
+    const expected = Vector(1, 2, 3);
+    const actual = vec1.Sub(vec2);
+
+    try expect(VectorEquals(expected, actual));
+}
+
+test "Vec4 Scaling" {
+    const vec1 = Vector(1, 2, 3);
+    const scalar1 = 2;
+
+    const expected1 = Vector(2, 4, 6);
+    const actual1 = vec1.Scale(scalar1);
+
+    try expect(VectorEquals(expected1, actual1));
+
+    const vec2 = Vector(2, 4, 6);
+    const scalar2 = 0.5;
+
+    const expected2 = Vector(1, 2, 3);
+    const actual2 = vec2.Scale(scalar2);
+
+    try expect(VectorEquals(expected2, actual2));
+}
+
+test "Vec4 Negation" {
+    const vec = Vector(1, 2, 3);
+    const expected = Vector(-1, -2, -3);
+    const actual = vec.Neg();
+
+    try expect(VectorEquals(expected, actual));
+}
+
+test "Vec4 Magnitude" {
+    const vec = Vector(1, 2, 3);
+    const expected = math.sqrt(14);
+    const actual = vec.Mag();
+
+    try expect(expected == actual);
 }
