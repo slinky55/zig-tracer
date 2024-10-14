@@ -65,6 +65,10 @@ pub const Vec4 = packed struct {
             (self.z * other.z) +
             (self.w * other.w);
     }
+
+    pub fn Cross(self: Vec4, other: Vec4) Vec4 {
+        return Vector((self.y * other.z) - (self.z * other.y), (self.z * other.x) - (self.x * other.z), (self.x * other.y) - (self.y * other.x));
+    }
 };
 
 pub fn Point(x: f64, y: f64, z: f64) Vec4 {
@@ -85,7 +89,7 @@ pub fn Vector(x: f64, y: f64, z: f64) Vec4 {
     };
 }
 
-pub fn VectorEquals(a: Vec4, b: Vec4) bool {
+fn VectorEquals(a: Vec4, b: Vec4) bool {
     return (a.x == b.x) and (a.y == b.y) and (a.z == b.z) and (a.w == b.w);
 }
 
@@ -157,8 +161,28 @@ test "Vec4 Negation" {
 
 test "Vec4 Magnitude" {
     const vec = Vector(1, 2, 3);
-    const expected = math.sqrt(14);
+    const expected = math.sqrt(14.0);
     const actual = vec.Mag();
 
     try expect(expected == actual);
+}
+
+test "Vec4 Dot Product" {
+    const vec1 = Vector(1, 2, 3);
+    const vec2 = Vector(4, 5, 6);
+
+    const expected = 32.0;
+    const actual = vec1.Dot(vec2);
+
+    try expect(expected == actual);
+}
+
+test "Vector Cross Product" {
+    const vec1 = Vector(1, 2, 3);
+    const vec2 = Vector(4, 5, 6);
+
+    const expected = Vector(-3, 6, -3);
+    const actual = vec1.Cross(vec2);
+
+    try expect(VectorEquals(expected, actual));
 }
