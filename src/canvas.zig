@@ -6,13 +6,13 @@ const Color = @import("color.zig").Color;
 pub const Canvas = struct {
     width: usize,
     height: usize,
-    pixels: ArrayList(Color),
+    pixels: []Color,
 
     pub fn New(width: usize, height: usize, allocator: Allocator) Canvas {
         return Canvas{
             .width = width,
             .height = height,
-            .pixels = allocator.alloc(Color, width * height),
+            .pixels = try allocator.alloc(Color, width * height),
         };
     }
 
